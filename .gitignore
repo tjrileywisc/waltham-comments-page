@@ -1,2 +1,7 @@
 
+# python stuff
+__pycache__
+.venv
+
+# javascript stuff
 node_modules
