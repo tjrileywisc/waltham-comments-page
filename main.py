@@ -1,37 +1,45 @@
+
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
 from pydantic import BaseModel
 import pickle
 import os
+import pathlib
+from pathlib import Path
 
 app = FastAPI()
-DATA_FILE = "video_state.pkl"
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "rb") as f:
-            return pickle.load(f)
-    return {}
+app.mount(
+    "/static",
+    StaticFiles(directory="./frontend/build/static"),
+    name="static"
+)
 
-def save_data(data):
-    with open(DATA_FILE, "wb") as f:
-        pickle.dump(data, f)
+VIDEO_DB = list()
 
-class VideoUpdate(BaseModel):
-    video_id: str
-    current_time: float
-    completed: bool = False
+@app.get("/")
+def root():
+    return FileResponse("./frontend/build/index.html")
 
-@app.post("/update")
-def update_video(data: VideoUpdate):
-    state = load_data()
-    state[data.video_id] = {
-        "last_time": data.current_time,
-        "completed": data.completed
-    }
-    save_data(state)
-    return {"status": "ok"}
+@app.get("/video/{video_id}")
+def get_video(video_id: str):
+    pass
 
-@app.get("/state/{video_id}")
-def get_state(video_id: str):
-    state = load_data()
-    return state.get(video_id, {})
+@app.get("/videos")
+def get_videos():
+    files = os.listdir(os.environ["VIDEO_DIR"])
+    VIDEO_DB = [{"video_id": i, "path": path} for i, path in enumerate(files)]
+    return VIDEO_DB
+
+@app.get("/transcriptions/{video_id}")
+def get_video_transcription(video_id: str) -> Path:
+    return pathlib.Path(os.environ["TRANSCRIPTION_DIR"]) / video_id
