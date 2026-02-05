@@ -1,15 +1,15 @@
 
 import { useEffect, useState } from "react";
 
-function VideoList() {
-    const [speakers, setSpeakers] = useState([]);
+function VideoList({ onSelectVideo }) {
+    const [videos, setVideos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         let cancelled = false;
 
-        async function fetchSpeakers() { 
+        async function fetchVideos() { 
             try {
                 const res = await fetch("./videos");
                 if(!res.ok) {
@@ -18,7 +18,7 @@ function VideoList() {
 
                 const data = await res.json();
                 if (!cancelled) {
-                    setSpeakers(data)
+                    setVideos(data)
                 }
             } catch (err) {
                 if (!cancelled) {
@@ -31,7 +31,7 @@ function VideoList() {
             }
         }
 
-        fetchSpeakers();
+        fetchVideos();
 
         return () => {
             cancelled = true;
@@ -44,22 +44,30 @@ function VideoList() {
     if (error) return <p style={{ color: "red" }}>Error: {error}</p>;
 
     return (
-        <table border="1" cellPadding="8">
-            <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Path</th>
-                </tr>
-            </thead>
-            <tbody>
-                {speakers.map((s) => (
-                    <tr key={s.video_id}>
-                        <td>{s.video_id}</td>
-                        <td>{s.path}</td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
+      <table border="1" cellPadding="8">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Path</th>
+          </tr>
+        </thead>
+        <tbody>
+          {videos.map((s) => (
+            <tr key={s.video_id}>
+              <td>{s.video_id}</td>
+              <td>
+                <button
+                  onClick={() => {
+                    onSelectVideo(s.video_id);
+                  }}
+                >
+                  Load video
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     );
 };
 

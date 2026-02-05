@@ -1,21 +1,26 @@
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
-async function getVideos() {
-    await fetch("./")
-}
-
-function VideoPlayer({videoId}) {
+function VideoPlayer({ videoId }) {
     const videoRef = useRef(null);
 
+    useEffect(() => {
+        if (videoId && videoRef.current) {
+            videoRef.current.load();
+            videoRef.current.play();
+        }
+    }, [videoId]);
+
+    if (videoId == null) {
+        return <p>Select a video to play</p>;
+    }
+
+    const videoSrc = `/video/${videoId}`;
+
     return (
-        <video
-            ref={videoRef}
-            src="/video.mp4"
-            controls
-            width="800"
-            height="800"
-        />
+        <video ref={videoRef} controls width="800" height="800">
+            <source src={videoSrc} type="video/mp4" />
+        </video>
     );
 }
 
