@@ -48,6 +48,7 @@ function VideoList({ onSelectVideo }) {
         <thead>
           <tr>
             <th>Id</th>
+            <th>Name</th>
             <th>Path</th>
           </tr>
         </thead>
@@ -55,6 +56,7 @@ function VideoList({ onSelectVideo }) {
           {videos.map((s) => (
             <tr key={s.video_id}>
               <td>{s.video_id}</td>
+              <td>{s.name}</td>
               <td>
                 <button
                   onClick={() => {

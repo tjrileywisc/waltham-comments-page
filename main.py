@@ -1,12 +1,11 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, logger
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
 
-from pydantic import BaseModel
-import pickle
 import os
 import pathlib
+import csv
 from pathlib import Path
 
 app = FastAPI()
@@ -29,11 +28,34 @@ VIDEO_DB = list()
 def root():
     return FileResponse("./frontend/build/index.html")
 
+@app.get("/transcript/{video_id}")
+def get_transcript(video_id: int):
+    name = VIDEO_DB[video_id]["name"]
+    
+    path = f"{os.environ['TRANSCRIPTION_DIR']}/{name}.csv"
+    
+    if not path or not os.path.exists(path):
+        logger.logger.error(f"can't find {path}")
+        raise HTTPException(404)
+    
+    with open(path, newline="") as f:
+        reader = csv.DictReader(f)
+        return [
+            {
+                "id": int(row["id"]),
+                "start": float(row["start"]),
+                "end": float(row["end"]),
+                "text": row["text"],
+                "speaker": row["speaker"],
+            }
+            for row in reader
+        ]
+
 @app.get("/video/{video_id}")
 def get_video(video_id: int, request: Request):
-    path = VIDEO_DB[video_id]["path"]
+    path = os.environ['VIDEO_DIR'] + "/" + VIDEO_DB[video_id]["name"] + ".mp4"
     if not path or not os.path.exists(path):
-        raise HTTPException(status_code=404)
+        raise HTTPException(404)
 
     file_size = os.path.getsize(path)
     range_header = request.headers.get("range")
@@ -68,8 +90,11 @@ def get_videos():
     global VIDEO_DB
 
     files = os.listdir(os.environ["VIDEO_DIR"])
+
+    files = [file.replace(".mp4", "").rsplit("/")[-1] for file in files]
+    
     VIDEO_DB = [
-        {"video_id": i, "path": f"{os.environ['VIDEO_DIR']}/{path}"}
+        {"video_id": i, "name": path}
         for i, path in enumerate(files)
     ]
     return VIDEO_DB
