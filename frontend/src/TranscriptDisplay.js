@@ -30,11 +30,12 @@ function TranscriptDisplay({ videoId, currentTime }) {
     seg => currentTime >= seg.start && currentTime <= seg.end
   );
 
-  if (!active) return null;
+  const speaker = active ? active.speaker : "----";
+  const text = active ? active.text : "----";
 
   return (
     <div className="transcript-line">
-      <strong>{active.speaker}</strong>: {active.text}
+      <strong>{speaker}</strong>: {text}
     </div>
   );
 }
