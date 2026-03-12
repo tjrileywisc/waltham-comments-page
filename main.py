@@ -32,7 +32,7 @@ def root():
 def get_transcript(video_id: int):
     name = VIDEO_DB[video_id]["name"]
     
-    path = f"{os.environ['TRANSCRIPTION_DIR']}/{name}.csv"
+    path = f"{os.environ['DATA_DIR']}/transcriptions/{name}.csv"
     
     if not path or not os.path.exists(path):
         logger.logger.error(f"can't find {path}")
@@ -53,7 +53,7 @@ def get_transcript(video_id: int):
 
 @app.get("/video/{video_id}")
 def get_video(video_id: int, request: Request):
-    path = os.environ['VIDEO_DIR'] + "/" + VIDEO_DB[video_id]["name"] + ".mp4"
+    path = os.environ['DATA_DIR'] + "/videos/" + VIDEO_DB[video_id]["name"] + ".mp4"
     if not path or not os.path.exists(path):
         raise HTTPException(404)
 
@@ -89,7 +89,7 @@ def get_video(video_id: int, request: Request):
 def get_videos():
     global VIDEO_DB
 
-    files = os.listdir(os.environ["VIDEO_DIR"])
+    files = os.listdir(os.environ["DATA_DIR"] + "/videos")
 
     files = [file.replace(".mp4", "").rsplit("/")[-1] for file in files]
     
@@ -101,4 +101,4 @@ def get_videos():
 
 @app.get("/transcriptions/{video_id}")
 def get_video_transcription(video_id: str) -> Path:
-    return pathlib.Path(os.environ["TRANSCRIPTION_DIR"]) / video_id
+    return pathlib.Path(os.environ["DATA_DIR"] + "/transcriptions") / video_id
