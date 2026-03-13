@@ -4,8 +4,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
 
 import os
-import pathlib
 import csv
+from lib.search import do_search
 from pathlib import Path
 from contextlib import asynccontextmanager
 
@@ -45,7 +45,7 @@ VIDEO_DB = list()
 def root():
     return FileResponse("./frontend/build/index.html")
 
-@app.get("/transcript/{video_id}")
+@app.get("/api/transcript/{video_id}")
 def get_transcript(video_id: int):
     name = VIDEO_DB[video_id]["name"]
     
@@ -68,7 +68,7 @@ def get_transcript(video_id: int):
             for row in reader
         ]
 
-@app.get("/video/{video_id}")
+@app.get("/api/video/{video_id}")
 def get_video(video_id: int, request: Request):
     path = os.environ['DATA_DIR'] + "/videos/" + VIDEO_DB[video_id]["name"] + ".mp4"
     
@@ -104,14 +104,22 @@ def get_video(video_id: int, request: Request):
         media_type="video/mp4",
     )
 
-@app.get("/videos")
+@app.get("/api/videos")
 def get_videos():
     return VIDEO_DB
 
 @app.get("/about")
 def about():
-    return "here's some text to show."
+    return FileResponse("./frontend/build/index.html")
 
-@app.get("/search")
-def search():
-    pass
+# search functions
+
+@app.get("/api/search")
+def search(query: str):
+    results = do_search(query)
+    return results
+
+# catch-all route
+@app.get("/{full_path:path}")
+def serve_frontend(full_path: str):
+    return FileResponse("./frontend/build/index.html")
