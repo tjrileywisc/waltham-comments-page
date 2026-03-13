@@ -14,7 +14,7 @@ function VideoPlayer({ videoId, onTimeUpdate }) {
     return <p>Select a video to play</p>;
   }
 
-  const videoSrc = `/video/${videoId}`;
+  const videoSrc = `/api/video/${videoId}`;
 
   return (
     <video

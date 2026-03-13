@@ -4,11 +4,28 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
 
 import os
-import pathlib
 import csv
+from lib.search import do_search
 from pathlib import Path
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.logger.info("Startup; initializing resources.")
+
+    global VIDEO_DB
+    files = os.listdir(os.environ["DATA_DIR"] + "/videos")
+    VIDEO_DB = [
+        {"video_id": i, "name": f.replace(".mp4", "")}
+        for i, f in enumerate(files)
+    ]
+
+    yield
+    
+    # shutdown
+
+
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -28,13 +45,13 @@ VIDEO_DB = list()
 def root():
     return FileResponse("./frontend/build/index.html")
 
-@app.get("/transcript/{video_id}")
+@app.get("/api/transcript/{video_id}")
 def get_transcript(video_id: int):
     name = VIDEO_DB[video_id]["name"]
     
-    path = f"{os.environ['DATA_DIR']}/transcriptions/{name}.csv"
+    path = Path(f"{os.environ['DATA_DIR']}/transcriptions/{name}.csv")
     
-    if not path or not os.path.exists(path):
+    if not path.exists():
         logger.logger.error(f"can't find {path}")
         raise HTTPException(404)
     
@@ -51,13 +68,15 @@ def get_transcript(video_id: int):
             for row in reader
         ]
 
-@app.get("/video/{video_id}")
+@app.get("/api/video/{video_id}")
 def get_video(video_id: int, request: Request):
     path = os.environ['DATA_DIR'] + "/videos/" + VIDEO_DB[video_id]["name"] + ".mp4"
-    if not path or not os.path.exists(path):
+    
+    video_path = Path(path)
+    if not video_path.exists:
         raise HTTPException(404)
 
-    file_size = os.path.getsize(path)
+    file_size = video_path.stat().st_size
     range_header = request.headers.get("range")
 
     if range_header:
@@ -85,20 +104,22 @@ def get_video(video_id: int, request: Request):
         media_type="video/mp4",
     )
 
-@app.get("/videos")
+@app.get("/api/videos")
 def get_videos():
-    global VIDEO_DB
-
-    files = os.listdir(os.environ["DATA_DIR"] + "/videos")
-
-    files = [file.replace(".mp4", "").rsplit("/")[-1] for file in files]
-    
-    VIDEO_DB = [
-        {"video_id": i, "name": path}
-        for i, path in enumerate(files)
-    ]
     return VIDEO_DB
 
-@app.get("/transcriptions/{video_id}")
-def get_video_transcription(video_id: str) -> Path:
-    return pathlib.Path(os.environ["DATA_DIR"] + "/transcriptions") / video_id
+@app.get("/about")
+def about():
+    return FileResponse("./frontend/build/index.html")
+
+# search functions
+
+@app.get("/api/search")
+def search(query: str):
+    results = do_search(query)
+    return results
+
+# catch-all route
+@app.get("/{full_path:path}")
+def serve_frontend(full_path: str):
+    return FileResponse("./frontend/build/index.html")
