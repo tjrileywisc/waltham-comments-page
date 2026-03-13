@@ -13,14 +13,17 @@ function App() {
   const [currentTime, setCurrentTime] = useState(0);
 
   return (
-    <div className="app-container">
-      <div className="left-pane">
-        <VideoPlayer videoId={videoId} onTimeUpdate={setCurrentTime} />
-        <TranscriptDisplay videoId={videoId} currentTime={currentTime} />
-      </div>
+    <div className="main-container">
+      <div className="app-container">
 
-      <div className="right-pane">
-        <VideoList onSelectVideo={setVideoId} />
+        <div className="left-pane">
+          <VideoPlayer videoId={videoId} onTimeUpdate={setCurrentTime} />
+          <TranscriptDisplay videoId={videoId} currentTime={currentTime} />
+        </div>
+
+        <div className="right-pane">
+          <VideoList onSelectVideo={setVideoId} />
+        </div>
       </div>
     </div>
   );

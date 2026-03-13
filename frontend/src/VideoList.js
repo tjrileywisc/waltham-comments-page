@@ -11,7 +11,7 @@ function VideoList({ onSelectVideo }) {
 
         async function fetchVideos() { 
             try {
-                const res = await fetch("./videos");
+                const res = await fetch("./api/videos");
                 if(!res.ok) {
                     throw new Error(`HTTP ${res.status}`);
                 }

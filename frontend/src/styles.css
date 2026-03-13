@@ -1,7 +1,21 @@
 
+.navbar {
+  display: flex;
+  justify-content: space-evenly;
+  width: 100%;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-item {
+  text-align: center;
+}
+
 .app-container {
   display: flex;
-  height: 100vh;
   gap: 16px;
   padding: 16px;
   box-sizing: border-box;
