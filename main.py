@@ -34,8 +34,8 @@ app.add_middleware(
 )
 
 app.mount(
-    "/static",
-    StaticFiles(directory="./frontend/build/static"),
+    "/assets",
+    StaticFiles(directory="./frontend/dist/assets"),
     name="static"
 )
 
@@ -43,7 +43,7 @@ VIDEO_DB = list()
 
 @app.get("/")
 def root():
-    return FileResponse("./frontend/build/index.html")
+    return FileResponse("./frontend/dist/index.html")
 
 @app.get("/api/transcript/{video_id}")
 def get_transcript(video_id: int):
@@ -110,7 +110,7 @@ def get_videos():
 
 @app.get("/about")
 def about():
-    return FileResponse("./frontend/build/index.html")
+    return FileResponse("./frontend/dist/index.html")
 
 # search functions
 
@@ -122,4 +122,4 @@ def search(query: str):
 # catch-all route
 @app.get("/{full_path:path}")
 def serve_frontend(full_path: str):
-    return FileResponse("./frontend/build/index.html")
+    return FileResponse("./frontend/dist/index.html")

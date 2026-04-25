@@ -9,7 +9,7 @@ function TranscriptDisplay({ videoId, currentTime }) {
 
     async function loadTranscript() {
       try {
-        const res = await fetch(`/transcript/${videoId}`);
+        const res = await fetch(`/api/transcript/${videoId}`);
         if(!res.ok) {
             throw new Error(`HTTP ${res.status}`);
         }
