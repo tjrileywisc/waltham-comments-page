@@ -9,9 +9,7 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/api': 'http://localhost:8001',
-      '/transcript': 'http://localhost:8001',
-      '/search': 'http://localhost:8001',
+      '/api': 'http://localhost:8000',
     },
   },
 })
